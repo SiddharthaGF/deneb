@@ -1,4 +1,4 @@
-import * as math from 'mathjs';
+import { combinations, factorial, permutations } from 'mathjs';
 
 export enum DecimalPrecision {
   D3 = 3,
@@ -139,15 +139,34 @@ export class Simulation {
   private CTte: number;
   private CTts: number;
   private CTtse: number;
+  private multiplier: number;
   constructor(inputParameters: InputParameters) {
     const { simulationParameters, simulationCosts, info } = inputParameters;
     this.lambda = simulationParameters.lambda;
     this.miu = simulationParameters.miu;
+    this.N = simulationParameters.N;
     this.decimalPrecision = info.decimalPrecision;
     this.simulationType = info.simulationType;
     this.queueModel = info.queueModel;
     this.timeUnit = info.timeUnit;
-    this.quantifier = info.quantifier;
+    switch (this.timeUnit) {
+      case TimeUnit.MILLISECONDS:
+        this.multiplier = 3600002.88;
+        break;
+      case TimeUnit.SECONDS:
+        this.multiplier = 3600;
+        break;
+      case TimeUnit.MINUTES:
+        this.multiplier = 60;
+        break;
+      case TimeUnit.HOURS:
+        this.multiplier = 1;
+        break;
+      case TimeUnit.DAYS:
+        this.multiplier = 0.0416667;
+        break;
+    }
+    if (this.N > 0) this.quantifier = info.quantifier;
     if (
       this.queueModel == QueueModels.MM1MM ||
       this.queueModel == QueueModels.MMKMM
@@ -158,17 +177,11 @@ export class Simulation {
       this.queueModel == QueueModels.MMKMM
     )
       this.k = simulationParameters.k;
-    this.N = simulationParameters.N;
     this.Cte = simulationCosts.Cte;
     this.Cts = simulationCosts.Cts;
     this.Ctse = simulationCosts.Ctse;
     this.Cs = simulationCosts.Cs;
-    if (
-      this.Cts != undefined ||
-      this.Cte != undefined ||
-      this.Ctse != undefined ||
-      this.Cs != undefined
-    )
+    if (this.Cts > 0 || this.Cte > 0 || this.Ctse > 0 || this.Cs > 0)
       this.hr = simulationCosts.hr;
   }
   private calculateAll() {
@@ -177,7 +190,7 @@ export class Simulation {
     this.PK = this.calculatePk();
     this.PE = this.calculatePe();
     this.PNE = this.calculatePne();
-    this.PN = this.calculatePn();
+    if (this.N > 0) this.PN = this.calculatePn();
     this.L = this.calculateL();
     this.LQ = this.calculateLq();
     this.LN = this.calculateLn();
@@ -207,31 +220,31 @@ export class Simulation {
         return 1 - this.P;
       case QueueModels.MMK:
         for (let n = 0; n <= this.k - 1; n++) {
-          sum += Math.pow(this.P, n) / math.factorial(n);
+          sum += this.P ** n / factorial(n);
         }
         sum +=
-          (Math.pow(this.P, this.k) / math.factorial(this.k)) *
+          (this.P ** this.k / factorial(this.k)) *
           ((this.k * this.miu) / (this.k * this.miu - this.lambda));
         return 1 / sum;
       case QueueModels.MM1MM:
         for (let n = 0; n <= this.M; n++) {
-          sum += math.permutations(this.M, n) * Math.pow(this.P, n);
+          sum += permutations(this.M, n) * this.P ** n;
         }
         return 1 / sum;
       case QueueModels.MMKMM:
         for (let n = 0; n <= this.k - 1; n++) {
-          sum += math.combinations(this.M, n) * Math.pow(this.P, n);
+          sum += combinations(this.M, n) * this.P ** n;
         }
         for (let n = this.k; n <= this.M; n++) {
           sum +=
-            (math.permutations(this.M, n) * Math.pow(this.P, n)) /
-            (math.factorial(this.k) * Math.pow(this.k, n - this.k));
+            (permutations(this.M, n) * this.P ** n) /
+            (factorial(this.k) * this.k ** (n - this.k));
         }
         return 1 / sum;
     }
   }
   private calculatePn(): number {
-    if (this.N == undefined) return this.PN;
+    if (this.N > 0) return this.PN;
     let n: number;
     if (this.simulationType == SimulationType.SYSTEM) n = this.N;
     else if (this.simulationType == SimulationType.QUEUE) {
@@ -254,8 +267,7 @@ export class Simulation {
   private calculatePk(): number {
     if (this.queueModel == QueueModels.MMK)
       return (
-        (((Math.pow(this.P, this.k) / math.factorial(this.k)) *
-          (this.k * this.miu)) /
+        (((this.P ** this.k / factorial(this.k)) * (this.k * this.miu)) /
           (this.k * this.miu - this.lambda)) *
         this.P0
       );
@@ -280,9 +292,7 @@ export class Simulation {
         return this.L / this.lambda;
       case QueueModels.MMK:
         return this.LQ / this.lambda + 1 / this.miu;
-      case QueueModels.MM1MM:
-        return this.LQ / ((this.M - this.L) * this.lambda) + 1 / this.miu;
-      case QueueModels.MMKMM:
+      default:
         return this.LQ / ((this.M - this.L) * this.lambda) + 1 / this.miu;
     }
   }
@@ -292,9 +302,7 @@ export class Simulation {
         return this.W * this.P;
       case QueueModels.MMK:
         return this.LQ / this.lambda;
-      case QueueModels.MM1MM:
-        return this.W - 1 / this.miu;
-      case QueueModels.MMKMM:
+      default:
         return this.W - 1 / this.miu;
     }
   }
@@ -304,9 +312,7 @@ export class Simulation {
         return this.W;
       case QueueModels.MMK:
         return this.WQ / this.PK;
-      case QueueModels.MM1MM:
-        return this.WQ / this.PE;
-      case QueueModels.MMKMM:
+      default:
         return this.WQ / this.PE;
     }
   }
@@ -316,9 +322,8 @@ export class Simulation {
         return this.lambda / (this.miu - this.lambda);
       case QueueModels.MMK:
         return (
-          (this.lambda * this.miu * Math.pow(this.P, this.k) * this.P0) /
-            (math.factorial(this.k - 1) *
-              Math.pow(this.k * this.miu - this.lambda, 2)) +
+          (this.lambda * this.miu * this.P ** this.k * this.P0) /
+            (factorial(this.k - 1) * (this.k * this.miu - this.lambda) ** 2) +
           this.P
         );
       case QueueModels.MM1MM:
@@ -341,10 +346,6 @@ export class Simulation {
   }
   private calculateLq(): number {
     switch (this.queueModel) {
-      case QueueModels.MM1:
-        return this.L * this.P;
-      case QueueModels.MMK:
-        return this.L - this.P;
       case QueueModels.MM1MM:
         return this.M - ((this.miu + this.lambda) / this.lambda) * this.PE;
       case QueueModels.MMKMM:
@@ -353,6 +354,8 @@ export class Simulation {
           sum += (n - this.k) * this.calculateExactPn(n);
         }
         return sum;
+      default:
+        return this.L * this.P;
     }
   }
   private calculateLn(): number {
@@ -361,28 +364,26 @@ export class Simulation {
         return this.L;
       case QueueModels.MMK:
         return this.LQ / this.PK;
-      case QueueModels.MM1MM:
-        return this.LQ / this.PE;
-      case QueueModels.MMKMM:
+      default:
         return this.LQ / this.PE;
     }
   }
   private calculateExactPn(n: number = this.N): number {
-    const base = Math.pow(this.P, n) * this.P0;
+    const base = this.P ** n * this.P0;
     switch (this.queueModel) {
       case QueueModels.MM1:
         return base;
       case QueueModels.MMK:
         return n < this.k
-          ? base / math.factorial(n)
-          : base / (math.factorial(this.k) * Math.pow(this.k, n - this.k));
+          ? base / factorial(n)
+          : base / (factorial(this.k) * this.k ** (n - this.k));
       case QueueModels.MM1MM:
-        return base * math.permutations(this.M, n);
+        return base * permutations(this.M, n);
       case QueueModels.MMKMM:
         return 0 <= n && n <= this.k
-          ? base * math.combinations(this.M, n)
-          : (base * math.permutations(this.M, n)) /
-              (math.factorial(this.k) * Math.pow(this.k, n - this.k));
+          ? base * combinations(this.M, n)
+          : (base * permutations(this.M, n)) /
+              (factorial(this.k) * this.k ** (n - this.k));
     }
   }
   private calculateMaxPn(end?: number): number {
@@ -428,9 +429,9 @@ export class Simulation {
             L: this.fixed(this.L, this.decimalPrecision),
             Lq: this.fixed(this.LQ, this.decimalPrecision),
             Ln: this.fixed(this.LN, this.decimalPrecision),
-            W: this.fixed(this.W, this.decimalPrecision),
-            Wq: this.fixed(this.WQ, this.decimalPrecision),
-            Wn: this.fixed(this.WN, this.decimalPrecision),
+            W: this.fixed(this.W * this.multiplier, this.decimalPrecision),
+            Wq: this.fixed(this.WQ * this.multiplier, this.decimalPrecision),
+            Wn: this.fixed(this.WN * this.multiplier, this.decimalPrecision),
           },
         },
         costs: this.allPropertiesAreUndefined({
