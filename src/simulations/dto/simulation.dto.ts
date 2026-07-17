@@ -28,7 +28,6 @@ class StabilityConditionConstraint implements ValidatorConstraintInterface {
     return isStable(queueModel, lambda, miu, k);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   defaultMessage(args: ValidationArguments) {
     const lambda = args.object['lambda'];
     const miu = args.object['miu'];

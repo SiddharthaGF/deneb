@@ -7,6 +7,7 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import handlebars from 'handlebars';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -19,7 +20,7 @@ async function bootstrap() {
   });
   app.setViewEngine({
     engine: {
-      handlebars: require('handlebars'),
+      handlebars: handlebars,
     },
     templates: join(__dirname, '..', 'views'),
   });

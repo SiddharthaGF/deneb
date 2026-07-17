@@ -328,7 +328,7 @@ export class Simulation {
         );
       case QueueModels.MM1MM:
         return this.M - (this.miu / this.lambda) * this.PE;
-      case QueueModels.MMKMM:
+      case QueueModels.MMKMM: {
         let sum = 0;
         for (let n = 0; n <= this.k - 1; n++) {
           sum += n * this.calculateExactPn(n);
@@ -342,18 +342,20 @@ export class Simulation {
         }
         sum += this.k * (1 - aux);
         return sum;
+      }
     }
   }
   private calculateLq(): number {
     switch (this.queueModel) {
       case QueueModels.MM1MM:
         return this.M - ((this.miu + this.lambda) / this.lambda) * this.PE;
-      case QueueModels.MMKMM:
+      case QueueModels.MMKMM: {
         let sum = 0;
         for (let n = this.k; n <= this.M; n++) {
           sum += (n - this.k) * this.calculateExactPn(n);
         }
         return sum;
+      }
       default:
         return this.L * this.P;
     }
@@ -465,7 +467,7 @@ export class Simulation {
   fixed(number: number, fix: number): number | undefined {
     try {
       return Number(number.toFixed(fix));
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }
