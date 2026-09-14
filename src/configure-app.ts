@@ -1,7 +1,5 @@
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { join } from 'path';
@@ -27,6 +25,7 @@ export async function configureApp(
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
+      whitelist: true,
     }),
   );
 
@@ -37,7 +36,7 @@ export async function configureApp(
     )
     .setVersion('1.0.2')
     .addServer('https://deneb.vercel.app', 'Server Deneb')
-    .addTag('model')
+    .addTag('simulations', 'Queue model performance measures and costs')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {

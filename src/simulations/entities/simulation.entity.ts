@@ -398,71 +398,65 @@ export class Simulation {
   private calculateMinPn(start: number): number {
     return 1 - this.calculateMaxPn(start - 1);
   }
-  async getAllCalculations(): Promise<SimulationResults> {
+  getAllCalculations(): SimulationResults {
     this.calculateAll();
-    return new Promise<SimulationResults>((resolve) => {
-      const results: SimulationResults = {
-        parameters: {
-          simulationParameters: {
-            lambda: this.fixed(this.lambda, this.decimalPrecision),
-            miu: this.fixed(this.miu, this.decimalPrecision),
-            M: this.M,
-            k: this.k,
-            N: this.N,
-          },
-          simulationCosts: this.allPropertiesAreUndefined({
-            Cte: this.fixed(this.Cte, this.decimalPrecision),
-            Cts: this.fixed(this.Cts, this.decimalPrecision),
-            Ctse: this.fixed(this.Ctse, this.decimalPrecision),
-            Cs: this.fixed(this.Cs, this.decimalPrecision),
-            hr: this.fixed(this.hr, this.decimalPrecision),
-          }),
+    return {
+      parameters: {
+        simulationParameters: {
+          lambda: this.fixed(this.lambda, this.decimalPrecision),
+          miu: this.fixed(this.miu, this.decimalPrecision),
+          M: this.M,
+          k: this.k,
+          N: this.N,
         },
-        performanceMeasures: {
-          specificPerformanceMeasures: {
-            p: this.fixed(this.P, this.decimalPrecision),
-            p0: this.fixed(this.P0, this.decimalPrecision),
-            pk: this.fixed(this.PK, this.decimalPrecision),
-            pn: this.fixed(this.PN, this.decimalPrecision),
-            pe: this.fixed(this.PE, this.decimalPrecision),
-            pne: this.fixed(this.PNE, this.decimalPrecision),
-          },
-          generalPerformanceMeasures: {
-            L: this.fixed(this.L, this.decimalPrecision),
-            Lq: this.fixed(this.LQ, this.decimalPrecision),
-            Ln: this.fixed(this.LN, this.decimalPrecision),
-            W: this.fixed(this.W * this.multiplier, this.decimalPrecision),
-            Wq: this.fixed(this.WQ * this.multiplier, this.decimalPrecision),
-            Wn: this.fixed(this.WN * this.multiplier, this.decimalPrecision),
-          },
-        },
-        costs: this.allPropertiesAreUndefined({
-          CTte: this.fixed(this.CTte, this.decimalPrecision),
-          CTts: this.fixed(this.CTts, this.decimalPrecision),
-          CTtse: this.fixed(this.CTtse, this.decimalPrecision),
-          CTs: this.fixed(this.CTs, this.decimalPrecision),
-          CT: this.fixed(this.CT, this.decimalPrecision),
+        simulationCosts: this.omitUndefined({
+          Cte: this.fixed(this.Cte, this.decimalPrecision),
+          Cts: this.fixed(this.Cts, this.decimalPrecision),
+          Ctse: this.fixed(this.Ctse, this.decimalPrecision),
+          Cs: this.fixed(this.Cs, this.decimalPrecision),
+          hr: this.fixed(this.hr, this.decimalPrecision),
         }),
-        info: {
-          decimalPrecision: this.decimalPrecision,
-          simulationType: this.simulationType,
-          queueModel: this.queueModel,
-          timeUnit: this.timeUnit,
-          quantifier: this.quantifier,
+      },
+      performanceMeasures: {
+        specificPerformanceMeasures: {
+          p: this.fixed(this.P, this.decimalPrecision),
+          p0: this.fixed(this.P0, this.decimalPrecision),
+          pk: this.fixed(this.PK, this.decimalPrecision),
+          pn: this.fixed(this.PN, this.decimalPrecision),
+          pe: this.fixed(this.PE, this.decimalPrecision),
+          pne: this.fixed(this.PNE, this.decimalPrecision),
         },
-      };
-      resolve(results);
-    });
+        generalPerformanceMeasures: {
+          L: this.fixed(this.L, this.decimalPrecision),
+          Lq: this.fixed(this.LQ, this.decimalPrecision),
+          Ln: this.fixed(this.LN, this.decimalPrecision),
+          W: this.fixed(this.W * this.multiplier, this.decimalPrecision),
+          Wq: this.fixed(this.WQ * this.multiplier, this.decimalPrecision),
+          Wn: this.fixed(this.WN * this.multiplier, this.decimalPrecision),
+        },
+      },
+      costs: this.omitUndefined({
+        CTte: this.fixed(this.CTte, this.decimalPrecision),
+        CTts: this.fixed(this.CTts, this.decimalPrecision),
+        CTtse: this.fixed(this.CTtse, this.decimalPrecision),
+        CTs: this.fixed(this.CTs, this.decimalPrecision),
+        CT: this.fixed(this.CT, this.decimalPrecision),
+      }),
+      info: {
+        decimalPrecision: this.decimalPrecision,
+        simulationType: this.simulationType,
+        queueModel: this.queueModel,
+        timeUnit: this.timeUnit,
+        quantifier: this.quantifier,
+      },
+    };
   }
-  private allPropertiesAreUndefined(obj: any): any {
-    let allUndefined = true;
-    for (const prop in obj) {
-      if (obj[prop] !== undefined) {
-        allUndefined = false;
-        break;
-      }
-    }
-    return allUndefined ? undefined : obj;
+
+  private omitUndefined<T extends object>(object: T): T | undefined {
+    const hasDefinedValue = Object.values(object).some(
+      (value) => value !== undefined,
+    );
+    return hasDefinedValue ? object : undefined;
   }
   fixed(number: number, fix: number): number;
   fixed(number: number | undefined, fix: number): number | undefined;

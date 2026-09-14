@@ -1,6 +1,7 @@
 import { Controller, Get, Render } from '@nestjs/common';
-import { AppService } from './app.service.js';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import { AppService } from './app.service.js';
+import type { RootView } from './app.service.js';
 
 @Controller()
 export class AppController {
@@ -9,11 +10,7 @@ export class AppController {
   @Get()
   @ApiExcludeEndpoint()
   @Render('index.hbs')
-  root() {
-    return {
-      tittle: 'Deneb API ✨ Queuing theory calculator',
-      nameProject: 'Deneb Api',
-      description: 'Queuing theory calculator',
-    };
+  root(): RootView {
+    return this.appService.getRootView();
   }
 }
