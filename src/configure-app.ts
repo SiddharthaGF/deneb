@@ -2,33 +2,27 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { join } from 'path';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import handlebars from 'handlebars';
-import { AppModule } from './app.module.js';
 
-const currentDir = dirname(fileURLToPath(import.meta.url));
+export async function configureApp(
+  app: NestFastifyApplication,
+): Promise<NestFastifyApplication> {
+  const adapter = app.getHttpAdapter() as unknown as FastifyAdapter;
 
-export async function createApp(): Promise<NestFastifyApplication> {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter(),
-  );
-
-  app.useStaticAssets({
-    root: join(currentDir, '..', 'public'),
+  await adapter.useStaticAssets({
+    root: join(process.cwd(), 'public'),
     prefix: '/public/',
   });
-  app.setViewEngine({
+  await adapter.setViewEngine({
     engine: {
       handlebars: handlebars,
     },
-    templates: join(currentDir, '..', 'views'),
+    templates: join(process.cwd(), 'views'),
   });
+
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
