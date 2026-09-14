@@ -144,7 +144,7 @@ export class Simulation {
     const { simulationParameters, simulationCosts, info } = inputParameters;
     this.lambda = simulationParameters.lambda;
     this.miu = simulationParameters.miu;
-    this.N = simulationParameters.N;
+    this.N = simulationParameters.N!;
     this.decimalPrecision = info.decimalPrecision;
     this.simulationType = info.simulationType;
     this.queueModel = info.queueModel;
@@ -171,12 +171,12 @@ export class Simulation {
       this.queueModel == QueueModels.MM1MM ||
       this.queueModel == QueueModels.MMKMM
     )
-      this.M = simulationParameters.M;
+      this.M = simulationParameters.M!;
     if (
       this.queueModel == QueueModels.MMK ||
       this.queueModel == QueueModels.MMKMM
     )
-      this.k = simulationParameters.k;
+      this.k = simulationParameters.k!;
     this.Cte = simulationCosts.Cte;
     this.Cts = simulationCosts.Cts;
     this.Ctse = simulationCosts.Ctse;
@@ -187,9 +187,9 @@ export class Simulation {
   private calculateAll() {
     this.P = this.calculateP();
     this.P0 = this.calculateP0();
-    this.PK = this.calculatePk();
-    this.PE = this.calculatePe();
-    this.PNE = this.calculatePne();
+    this.PK = this.calculatePk()!;
+    this.PE = this.calculatePe()!;
+    this.PNE = this.calculatePne()!;
     if (this.N > 0) this.PN = this.calculatePn();
     this.L = this.calculateL();
     this.LQ = this.calculateLq();
@@ -245,7 +245,7 @@ export class Simulation {
   }
   private calculatePn(): number {
     if (this.N > 0) return this.PN;
-    let n: number;
+    let n: number = this.N;
     if (this.simulationType == SimulationType.SYSTEM) n = this.N;
     else if (this.simulationType == SimulationType.QUEUE) {
       if (
@@ -264,7 +264,7 @@ export class Simulation {
         return this.calculateMinPn(n);
     }
   }
-  private calculatePk(): number {
+  private calculatePk(): number | undefined {
     if (this.queueModel == QueueModels.MMK)
       return (
         (((this.P ** this.k / factorial(this.k)) * (this.k * this.miu)) /
@@ -272,7 +272,7 @@ export class Simulation {
         this.P0
       );
   }
-  private calculatePe(): number {
+  private calculatePe(): number | undefined {
     if (this.queueModel == QueueModels.MM1MM) return 1 - this.P0;
     else if (this.queueModel == QueueModels.MMKMM) {
       let sum = 0;
@@ -282,7 +282,7 @@ export class Simulation {
       return 1 - sum;
     }
   }
-  private calculatePne(): number {
+  private calculatePne(): number | undefined {
     if (this.queueModel == QueueModels.MMK) return 1 - this.PK;
     if (this.queueModel == QueueModels.MMKMM) return 1 - this.PE;
   }
@@ -388,14 +388,14 @@ export class Simulation {
               (factorial(this.k) * this.k ** (n - this.k));
     }
   }
-  private calculateMaxPn(end?: number): number {
+  private calculateMaxPn(end: number): number {
     let sum = 0;
     for (let i = 0; i <= end; i++) {
       sum += this.calculateExactPn(i);
     }
     return sum;
   }
-  private calculateMinPn(start?: number): number {
+  private calculateMinPn(start: number): number {
     return 1 - this.calculateMaxPn(start - 1);
   }
   async getAllCalculations(): Promise<SimulationResults> {
@@ -464,12 +464,11 @@ export class Simulation {
     }
     return allUndefined ? undefined : obj;
   }
-  fixed(number: number, fix: number): number | undefined {
-    try {
-      return Number(number.toFixed(fix));
-    } catch {
-      return undefined;
-    }
+  fixed(number: number, fix: number): number;
+  fixed(number: number | undefined, fix: number): number | undefined;
+  fixed(number: number | undefined, fix: number): number | undefined {
+    if (number === undefined) return undefined;
+    return Number(number.toFixed(fix));
   }
   private calculateCTte(
     lambda: number,

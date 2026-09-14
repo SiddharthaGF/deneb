@@ -16,23 +16,18 @@ import {
   QueueModels,
   SimulationType,
   TimeUnit,
-} from '../entities/simulation.entity';
+} from '../entities/simulation.entity.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @ValidatorConstraint({ name: 'stabilityCondition', async: false })
 class StabilityConditionConstraint implements ValidatorConstraintInterface {
   validate(queueModel: QueueModels, args: ValidationArguments) {
-    const lambda = args.object['lambda'];
-    const miu = args.object['miu'];
-    const k = args.object['k'];
+    const { lambda, miu, k } = args.object as SimulationDto;
     return isStable(queueModel, lambda, miu, k);
   }
 
   defaultMessage(args: ValidationArguments) {
-    const lambda = args.object['lambda'];
-    const miu = args.object['miu'];
-    const k = args.object['k'];
-    const queueModel = args.object['queueModel'];
+    const { lambda, miu, k, queueModel } = args.object as SimulationDto;
     switch (queueModel) {
       case QueueModels.MM1:
         return `lambda=${lambda}/miu=${miu} < 1 does not satisfy the stability condition`;
@@ -40,6 +35,9 @@ class StabilityConditionConstraint implements ValidatorConstraintInterface {
         if (!k)
           return 'k is required to calculate the satisfy the stability condition';
         return `lambda=${lambda}/(miu=${miu}*k=${k}) < 1 does not satisfy the stability condition`;
+      case QueueModels.MM1MM:
+      case QueueModels.MMKMM:
+        return 'The stability condition is always satisfied for this model';
     }
   }
 }
@@ -54,7 +52,7 @@ function isStable(
     case QueueModels.MM1:
       return lambda / miu < 1;
     case QueueModels.MMK:
-      return lambda / (k * miu) < 1;
+      return lambda / (k! * miu) < 1;
     case QueueModels.MM1MM:
       return true;
     case QueueModels.MMKMM:

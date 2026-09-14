@@ -3,10 +3,9 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
-import { join } from 'path';
-import handlebars from 'handlebars';
 import request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from './../src/app.module.js';
+import { configureApp } from './../src/configure-app.js';
 
 describe('AppController (e2e)', () => {
   let app: NestFastifyApplication;
@@ -19,16 +18,7 @@ describe('AppController (e2e)', () => {
     app = moduleFixture.createNestApplication<NestFastifyApplication>(
       new FastifyAdapter(),
     );
-    app.useStaticAssets({
-      root: join(__dirname, '..', 'public'),
-      prefix: '/public/',
-    });
-    app.setViewEngine({
-      engine: {
-        handlebars: handlebars,
-      },
-      templates: join(__dirname, '..', 'views'),
-    });
+    await configureApp(app);
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
   });
