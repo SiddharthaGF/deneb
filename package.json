@@ -4,7 +4,6 @@
   "description": "",
   "author": "",
   "private": true,
-  "type": "module",
   "license": "UNLICENSED",
   "packageManager": "pnpm@10.33.3",
   "engines": {

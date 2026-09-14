@@ -16,7 +16,7 @@ import {
   QueueModels,
   SimulationType,
   TimeUnit,
-} from '../entities/simulation.entity.js';
+} from '../entities/simulation.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @ValidatorConstraint({ name: 'stabilityCondition', async: false })

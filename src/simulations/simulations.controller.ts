@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { SimulationsService } from './simulations.service.js';
-import { SimulationDto } from './dto/simulation.dto.js';
-import { InputParameters, Simulation } from './entities/simulation.entity.js';
+import { SimulationsService } from './simulations.service';
+import { SimulationDto } from './dto/simulation.dto';
+import { InputParameters, Simulation } from './entities/simulation.entity';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller('api/v1/simulations')

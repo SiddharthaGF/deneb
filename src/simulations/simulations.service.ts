@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Simulation, SimulationResults } from './entities/simulation.entity.js';
+import { Simulation, SimulationResults } from './entities/simulation.entity';
 
 @Injectable()
 export class SimulationsService {
