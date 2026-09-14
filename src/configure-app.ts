@@ -36,7 +36,7 @@ export async function configureApp(
     )
     .setVersion('1.0.2')
     .addServer('https://deneb.vercel.app', 'Server Deneb')
-    .addTag('model')
+    .addTag('simulations', 'Queue model performance measures and costs')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {
