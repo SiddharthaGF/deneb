@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "packageManager": "pnpm@10.33.3",
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
   },
   "scripts": {
     "build": "nest build",
