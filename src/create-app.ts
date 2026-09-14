@@ -6,8 +6,12 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { join } from 'path';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import handlebars from 'handlebars';
 import { AppModule } from './app.module.js';
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
 
 export async function createApp(): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -16,14 +20,14 @@ export async function createApp(): Promise<NestFastifyApplication> {
   );
 
   app.useStaticAssets({
-    root: join(__dirname, '..', 'public'),
+    root: join(currentDir, '..', 'public'),
     prefix: '/public/',
   });
   app.setViewEngine({
     engine: {
       handlebars: handlebars,
     },
-    templates: join(__dirname, '..', 'views'),
+    templates: join(currentDir, '..', 'views'),
   });
   app.enableCors();
   app.useGlobalPipes(
