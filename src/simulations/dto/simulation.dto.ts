@@ -5,8 +5,10 @@ import {
   IsPositive,
   Validate,
   ValidateIf,
-  ValidationArguments,
   ValidatorConstraint,
+} from 'class-validator';
+import type {
+  ValidationArguments,
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
@@ -52,7 +54,7 @@ function isStable(
     case QueueModels.MM1:
       return lambda / miu < 1;
     case QueueModels.MMK:
-      return lambda / (k! * miu) < 1;
+      return k !== undefined && lambda / (k * miu) < 1;
     case QueueModels.MM1MM:
       return true;
     case QueueModels.MMKMM:
@@ -79,7 +81,7 @@ export class SimulationDto {
       simulation.queueModel === QueueModels.MM1MM ||
       simulation.queueModel === QueueModels.MMKMM,
   )
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }) => parseInt(value, 10))
   @IsPositive()
   M: number;
 
@@ -89,12 +91,12 @@ export class SimulationDto {
       simulation.queueModel === QueueModels.MMK ||
       simulation.queueModel === QueueModels.MMKMM,
   )
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }) => parseInt(value, 10))
   @IsPositive()
   k: number;
 
   @ApiPropertyOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }) => parseInt(value, 10))
   @IsPositive()
   @IsOptional()
   N: number;
@@ -130,7 +132,7 @@ export class SimulationDto {
   hr: number;
 
   @ApiPropertyOptional({ enum: DecimalPrecision })
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }) => parseInt(value, 10))
   @IsEnum(DecimalPrecision)
   @IsOptional()
   decimalPrecision: DecimalPrecision = DecimalPrecision.D6;

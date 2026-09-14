@@ -1,8 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SimulationsService } from './simulations.service.js';
 import { SimulationDto } from './dto/simulation.dto.js';
-import { InputParameters, Simulation } from './entities/simulation.entity.js';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { SimulationResults } from './entities/simulation.entity.js';
 
 @Controller('api/v1/simulations')
 @ApiTags('simulations')
@@ -13,31 +13,7 @@ export class SimulationsController {
   @ApiOperation({
     description: 'Calculates all performance measures and costs.',
   })
-  async calculate(@Query() simulationDto: SimulationDto) {
-    const inputParameters: InputParameters = {
-      simulationParameters: {
-        lambda: simulationDto.lambda,
-        miu: simulationDto.miu,
-        M: simulationDto.M,
-        k: simulationDto.k,
-        N: simulationDto.N,
-      },
-      simulationCosts: {
-        Cte: simulationDto.Cte,
-        Cts: simulationDto.Cts,
-        Ctse: simulationDto.Ctse,
-        Cs: simulationDto.Cs,
-        hr: simulationDto.hr,
-      },
-      info: {
-        decimalPrecision: simulationDto.decimalPrecision,
-        simulationType: simulationDto.simulationType,
-        queueModel: simulationDto.queueModel,
-        timeUnit: simulationDto.timeUnit,
-        quantifier: simulationDto.quantifier,
-      },
-    };
-    const simulation = new Simulation(inputParameters);
-    return this.simulationsService.calculate(simulation);
+  calculate(@Query() simulationDto: SimulationDto): SimulationResults {
+    return this.simulationsService.calculate(simulationDto);
   }
 }
