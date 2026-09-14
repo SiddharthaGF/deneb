@@ -1,8 +1,8 @@
-const { createApp } = require('../dist/create-app');
+import { createApp } from '../dist/create-app.js';
 
 let app;
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   if (!app) {
     app = await createApp();
     await app.init();
